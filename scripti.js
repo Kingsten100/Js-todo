@@ -15,7 +15,7 @@ async function getTasks(){
         
 
         console.log(data)
-        data.forEach(task => createListItem(task.title))
+        data.forEach(task => createListItem(task))
         
 
     }
@@ -52,13 +52,40 @@ async function deleteTask(id){
         const res = await fetch(`https://js1-todo-api.vercel.app/api/todos/${id}?apikey=1734c322-ea8f-4b07-98a4-b3b9fed52852`, {
             method: 'DELETE'
         })
-
+        console.log(`task id ${id}`)
 
     }
     catch (error){
         console.log('fel', error)
     }
 }
+
+
+async function updateTask(id, completed){
+    try{
+        const res = await fetch(`https://js1-todo-api.vercel.app/api/todos/${id}?apikey=1734c322-ea8f-4b07-98a4-b3b9fed52852`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({completed: completed})
+        })
+
+        const data = await res.json();
+
+        console.log(data)
+    }
+    catch (error){
+        console.log('Fel', error)
+    }
+}
+
+
+
+
+
+
+
 
 
 
@@ -99,13 +126,19 @@ function createListItem(task) {
             existingError.remove();
         }
 
+        const id = task._id
+
         
         
         let li = document.createElement('li');
         li.classList.add('task-card');
+        li.dataset._id = id
 
     let taskText = document.createElement('span')
-    taskText.textContent = task || task.title;
+    taskText.textContent = task.title;
+    if(task.completed){
+        taskText.classList.add('complete')
+    }
     
     li.appendChild(taskText);
 
@@ -115,12 +148,14 @@ function createListItem(task) {
 
     li.appendChild(button);
 
-    button.addEventListener('click', e => {
+    button.addEventListener('click', async e => {
         e.stopPropagation()
+        await deleteTask(id)
         li.remove();
     })
 
-    li.addEventListener('click', e => {
+    li.addEventListener('click', async e => {
+        await updateTask(id, !task.completed)
         taskText.classList.toggle('complete')
     })
 
