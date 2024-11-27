@@ -27,7 +27,7 @@ async function getTasks(){
     }
 }
 
-getTasks()
+
 
 async function addTask(task){
     try{
@@ -87,112 +87,107 @@ async function updateTask(id, completed){
 
 
 
-
-
-
-
-
-
-
-
-// Funktion som lyssnar efter en submit och skickar iväg min uppgift till formuläret
-aaddTask.addEventListener('submit', async e => {
-    e.preventDefault()
-
-    const taskTitle = document.querySelector('#task-input').value
-
-    if(taskTitle === ''){
-        if(!document.querySelector('.error')){
-            let errorMsg = document.createElement('span')
-            errorMsg.textContent = 'You need to enter a task'
-            errorMsg.classList.add('error')
-            error.appendChild(errorMsg)
-            console.log(errorMsg)
-        }
-            
-        
-        
-    } else{
-        
-        error.remove()
-        
-        
-        await addTask(taskTitle)
+function displayError(message) {
+    if (!document.querySelector('.error')) {
+        const errorMsg = document.createElement('span');
+        errorMsg.textContent = message;
+        errorMsg.classList.add('error');
+        error.appendChild(errorMsg);
     }
+}
 
-    
-    taskInput.value = ''
-    
-})
 
-// Funktion som skapar mina uppgifter i html filen
+function clearError() {
+    const existingError = document.querySelector('.error');
+    if (existingError) {
+        existingError.remove();
+    }
+}
+
+
+function showModal() {
+    modalWrapper.style.display = 'block';
+}
+
+
 function createListItem(task) {
+    clearError();
 
-    
-        const existingError = document.querySelector('.error');
-        if (existingError) {
-            existingError.remove();
-        }
+    const li = document.createElement('li');
+    li.classList.add('task-card');
+    li.dataset._id = task._id;
 
-        const id = task._id
-
-        
-        
-        let li = document.createElement('li');
-        li.classList.add('task-card');
-        li.dataset._id = id
-
-    let taskText = document.createElement('span')
+    const taskText = document.createElement('span');
     taskText.textContent = task.title;
+    if (task.completed) taskText.classList.add('complete');
     li.appendChild(taskText);
-    if(task.completed){
-        taskText.classList.add('complete')
-    }
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = 'X';
+    deleteBtn.classList.add('delete-btn');
+    li.appendChild(deleteBtn);
+
     
-    
-
-    let button = document.createElement('button');
-    button.textContent = ' X ';
-    button.classList.add('delete-btn');
-
-    li.appendChild(button);
-
-    button.addEventListener('click', async e => {
-        e.stopPropagation()
-        if(!task.completed){
-            modal.style.display = 'block'
-        }
-        else{
-            await deleteTask(id)
+    deleteBtn.addEventListener('click', async e => {
+        e.stopPropagation();
+        if (!task.completed) {
+            showModal();
+        } else {
+            await deleteTask(task._id);
             li.remove();
         }
+    });
 
-
-
-       
-    })
-
-    li.addEventListener('click', async e => {
-        e.stopPropagation()
-        const taskStatus = !task.completed
-        await updateTask(id, !task.completed)
-        taskText.classList.toggle('complete')
-        task.completed = taskStatus
-    })
+    li.addEventListener('click', async () => {
+        const taskStatus = !task.completed;
+        await updateTask(task._id, taskStatus);
+        taskText.classList.toggle('complete');
+        task.completed = taskStatus;
+    });
 
     listContainer.appendChild(li);
-
-    modalWrapper.addEventListener('click', e => {
-        e.stopPropagation()
-        if(e.target === modalWrapper){
-            modal.style.display = 'none'
-        }
-    })
-
-    modal.addEventListener('click', e => {
-        e.stopPropagation()
-        modal.style.display = 'none'
-    })
-        
 }
+
+
+
+
+aaddTask.addEventListener('submit', async e => {
+    e.preventDefault();
+    const taskTitle = taskInput.value.trim();
+
+    if (taskTitle === '') {
+        displayError('You need to enter a task');
+    } else {
+        clearError();
+        await addTask(taskTitle);
+    }
+
+    taskInput.value = '';
+});
+
+
+modalWrapper.addEventListener('click', e => {
+    if (e.target === modalWrapper) {
+        modalWrapper.style.display = 'none';
+    }
+});
+
+
+closeModal.addEventListener('click', e => {
+    modalWrapper.style.display = 'none';
+});
+
+
+getTasks();
+
+
+
+
+
+
+
+
+
+
+
 
